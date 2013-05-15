@@ -4,7 +4,9 @@ var main_loop;
 var NUM_GROWERS = 10;
 var CANVAS_MARGIN = 10;
 var GROWER_START_SIZE = 50;
+var GROWER_TARGET_SIZE = 75;
 
+var current_growing = null;
 var growers = [];
 
 function Grower (x, y) {
@@ -12,6 +14,7 @@ function Grower (x, y) {
     this.y = y;
     this.size = GROWER_START_SIZE;
     this.growing = false;
+    this.locked = false;
     this.dead = false;
 }
 Grower.prototype.draw = function (ctx) {
@@ -19,7 +22,11 @@ Grower.prototype.draw = function (ctx) {
 	return;
     }
     ctx.beginPath ();
-    ctx.fillStyle = "rgb(255, 255, 255)";
+    if (this.locked) {
+	ctx.fillStyle = "rgb(200, 215, 255)";
+    } else {
+	ctx.fillStyle = "rgb(255, 255, 255)";
+    }
     ctx.arc (this.x, this.y, this.size, 0, Math.PI * 2, false);
     ctx.fill();
 };
@@ -27,24 +34,36 @@ Grower.prototype.update = function () {
     if (this.dead) {
 	return;
     }
+    if (this.locked) {
+	return;
+    }
     if (this.growing) {
 	this.size += .5;
     } else {
-	this.size -= .1;
+	if (current_growing) {
+	    this.size -= .2;
+	} else {
+	    this.size -= 0;
+	}
     }
 
     if (this.size <= 0) {
 	this.dead = true;
+    }
+    if (this.size >= GROWER_TARGET_SIZE) {
+	this.locked = true;
     }
 };
 
 function generate_growers () {
     for (var i = 0; i < NUM_GROWERS; i++) {
 	var redo = false;
-	var x = Math.floor(Math.random() * (canvas.width - (CANVAS_MARGIN + GROWER_START_SIZE) * 2) + CANVAS_MARGIN + GROWER_START_SIZE);
-	var y = Math.floor(Math.random() * (canvas.height - (CANVAS_MARGIN + GROWER_START_SIZE) * 2) + CANVAS_MARGIN + GROWER_START_SIZE);
+	var x = Math.floor(Math.random() * (canvas.width - (CANVAS_MARGIN + GROWER_TARGET_SIZE) * 2)
+			   + CANVAS_MARGIN + GROWER_TARGET_SIZE);
+	var y = Math.floor(Math.random() * (canvas.height - (CANVAS_MARGIN + GROWER_TARGET_SIZE) * 2)
+			   + CANVAS_MARGIN + GROWER_TARGET_SIZE);
 	for (g in growers) {
-	    if (hypot (x - growers[g].x, y - growers[g].y) < GROWER_START_SIZE * 2) {
+	    if (hypot (x - growers[g].x, y - growers[g].y) < GROWER_TARGET_SIZE * 2 + 10) {
 		redo = true;
 		break;
 	    }
@@ -82,6 +101,8 @@ function motion (evt) {
     var x = evt.offsetX - 5;
     var y = evt.offsetY - 5;
 
+    var found = null;
+
     for (g in growers) {
 	if (growers[g].dead) {
 	    continue;
@@ -89,10 +110,13 @@ function motion (evt) {
 
 	if (hypot (x - growers[g].x, y - growers[g].y) < growers[g].size) {
 	    growers[g].growing = true;
+	    found = growers[g];
 	} else {
 	    growers[g].growing = false;
 	}
     }
+
+    current_growing = found;
 
     mouse.x = x;
     mouse.y = y;
