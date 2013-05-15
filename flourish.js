@@ -10,6 +10,7 @@ function Grower (x, y) {
     this.x = x;
     this.y = y;
     this.size = 5;
+    this.growing = false;
 }
 Grower.prototype.draw = function (ctx) {
     ctx.beginPath ();
@@ -18,7 +19,9 @@ Grower.prototype.draw = function (ctx) {
     ctx.fill();
 };
 Grower.prototype.update = function () {
-    this.size += .1;
+    if (this.growing) {
+	this.size += .5;
+    }
 };
 
 function generate_growers () {
@@ -48,8 +51,31 @@ function update () {
     }
 }
 
+var mouse = new Object();
+
+function motion (evt) {
+    var x = evt.offsetX - 5;
+    var y = evt.offsetY - 5;
+
+    for (g in growers) {
+	if (hypot (x - growers[g].x, y - growers[g].y) < growers[g].size) {
+	    growers[g].growing = true;
+	} else {
+	    growers[g].growing = false;
+	}
+    }
+
+    mouse.x = x;
+    mouse.y = y;
+}
+
 function init () {
     canvas = $("#canvas")[0];
+
+    mouse.x = 0;
+    mouse.y = 0;
+
+    $("#canvas").mousemove (motion);
 
     generate_growers ();
 
