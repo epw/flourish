@@ -1,3 +1,4 @@
-h1 { }
+body { background-color: #000037 }
+h1 { color: white }
 div.canvas { }
-#canvas { border: medium gray outset }
+#canvas { border: medium darkgray outset }

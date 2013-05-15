@@ -6,13 +6,17 @@ var growers = [];
 function Grower (x, y) {
     this.x = x;
     this.y = y;
+    this.size = 5;
 }
 Grower.prototype.draw = function (ctx) {
     ctx.beginPath ();
     ctx.fillStyle = "rgb(255, 255, 255)";
-    ctx.arc (this.x, this.y, 5, 0, Math.PI * 2, false);
+    ctx.arc (this.x, this.y, this.size, 0, Math.PI * 2, false);
     ctx.fill();
-}
+};
+Grower.prototype.update = function () {
+    this.size += .1;
+};
 
 function draw () {
     ctx = canvas.getContext ('2d');
@@ -27,6 +31,10 @@ function draw () {
 
 function update () {
     draw ();
+
+    for (g in growers) {
+	growers[g].update ();
+    }
 }
 
 function init () {
